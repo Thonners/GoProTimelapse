@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Script to manage the wifi for the gopro timelapse
+
+function main() {
+
+    # Name of the netctl profile to attach to
+    goproProfile="gopro"
+    # Default to connecting to the gopro
+    connect_gopro=1
+
+    # Get the name of the profile that was in action before (hard code for now - need to find some permanent means of storage to allowf ht script to be called multiple times independently)
+    oldNetwork='lodge-2'
+
+    parseInput $@
+
+    if [[ $connect_gopro  -gt 0 ]]
+    then
+        # Stop the old connection
+        sudo netctl stop $oldNetwork
+
+        # Start the gopro connection
+        sudo netctl start $goproProfile
+    else
+        # Stop the gopro connection
+        sudo netctl stop $goproProfile
+
+        # Start the old connection
+        sudo netctl start $oldNetwork
+    fi
+
+    waitForNetwork
+}
+
+function parseInput() {
+
+    while [[ $# > 0 ]]
+    do
+        case $1 in
+            connect*)
+                connect_gopro=1
+                shift
+                ;;
+            disconnect*)
+                connect_gopro=0
+                shift
+                ;;
+            *)
+                echo "Unknown input argument: $1"
+                shift
+                ;;
+        esac
+    done
+}
+
+function waitForNetwork() {
+    # Wait for the network to come up (up to a max of 60s) so it's ready for use immediately after this script fininshes
+    counter=0
+    ping -q -c 1 -W 1 10.5.5.9 >/dev/null 2>&1
+    while [[ $? -gt 1 && $counter -lt 60 ]]
+    do
+        echo "Waiting for the network to come up..."
+        sleep 1
+        counter=$((counter+1))
+        ping -q -c 1 -W 1 10.5.5.9 >/dev/null 2>&1
+    done
+    # Report on the success (or otherwise)
+    if [[ $counter -lt 30 ]]
+    then
+        echo "Network up :)"
+    else
+        echo "Timed out waiting for network to come up :("
+    fi
+}
+main $@
