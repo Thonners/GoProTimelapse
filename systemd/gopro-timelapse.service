@@ -1,0 +1,10 @@
+[Unit]
+Description=Takes a photo every hour on the gopro using the python 'timelapse.py' script
+
+[Service]
+User=mathonwy
+Type=oneshot
+ExecStart=/opt/anaconda/bin/python /home/mathonwy/coding/gopro/timelapse/timelapse.py
+
+[Install]
+WantedBy=multi-user.target

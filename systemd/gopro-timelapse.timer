@@ -1,0 +1,9 @@
+[Unit]
+Description=Timer for gopro-timelapse. Takes a photo every hour on the gopro using the python 'timelapse.py' script
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+
+[Install]
+WantedBy=timers.target
